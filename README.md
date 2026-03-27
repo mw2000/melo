@@ -17,7 +17,7 @@ export PATH="$HOME/.local/bin:$PATH"
 ### From source
 
 ```sh
-make install
+just install
 ```
 
 Or with cargo directly: `cargo install --path .` (requires Rust 1.85+).

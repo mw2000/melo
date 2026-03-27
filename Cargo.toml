@@ -1,0 +1,12 @@
+[package]
+name = "mdfi"
+version = "0.1.0"
+edition = "2024"
+description = "A TUI markdown viewer"
+
+[dependencies]
+ratatui = "0.30"
+crossterm = "0.29"
+tui-markdown = "0.3"
+clap = { version = "4", features = ["derive"] }
+color-eyre = "0.6"

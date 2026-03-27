@@ -41,6 +41,12 @@ impl InputMap {
             .bind(KeyCode::Char('G'), KeyModifiers::SHIFT, Action::Bottom)
             .bind(KeyCode::Char('G'), KeyModifiers::NONE, Action::Bottom)
             .bind(KeyCode::End, KeyModifiers::NONE, Action::Bottom)
+            .bind(KeyCode::Char('?'), KeyModifiers::NONE, Action::ToggleHelp)
+            .bind(KeyCode::Char('?'), KeyModifiers::SHIFT, Action::ToggleHelp)
+            .bind(KeyCode::Char('/'), KeyModifiers::NONE, Action::EnterSearch)
+            .bind(KeyCode::Char('n'), KeyModifiers::NONE, Action::SearchNext)
+            .bind(KeyCode::Char('N'), KeyModifiers::SHIFT, Action::SearchPrev)
+            .bind(KeyCode::Char('N'), KeyModifiers::NONE, Action::SearchPrev)
             .build()
     }
 

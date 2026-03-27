@@ -43,14 +43,16 @@ impl Viewport {
         self.scroll_offset = self.max_scroll(viewport_height);
     }
 
-    #[allow(dead_code)]
     pub fn scroll_offset(&self) -> u16 {
         self.scroll_offset
     }
 
-    #[allow(dead_code)]
     pub fn content_height(&self) -> usize {
         self.content_height
+    }
+
+    pub fn scroll_to_line(&mut self, line: u16) {
+        self.scroll_offset = line;
     }
 
     fn max_scroll(&self, viewport_height: u16) -> u16 {

@@ -7,4 +7,8 @@ pub enum Action {
     PageDown,
     Top,
     Bottom,
+    ToggleHelp,
+    EnterSearch,
+    SearchNext,
+    SearchPrev,
 }

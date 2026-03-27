@@ -28,11 +28,11 @@ Or with cargo directly: `cargo install --path .` (requires Rust 1.85+).
 mdfi <file>
 ```
 
-**Examples:**
+Pipe from stdin:
 
 ```sh
-mdfi README.md
-mdfi ~/docs/notes.md
+cat README.md | mdfi
+curl -s https://example.com/doc.md | mdfi
 ```
 
 Pass `--help` or `--version` for the usual.
@@ -47,7 +47,12 @@ Pass `--help` or `--version` for the usual.
 | `Ctrl-u` / `PageUp` | Half-page up |
 | `g` / `Home` | Jump to top |
 | `G` / `End` | Jump to bottom |
+| `/` | Search |
+| `n` / `N` | Next / previous match |
+| `?` | Toggle help overlay |
 | `q` / `Esc` | Quit |
+
+Mouse scroll is supported.
 
 ## Built With
 

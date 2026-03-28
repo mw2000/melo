@@ -1,5 +1,8 @@
 use ratatui::style::{Color, Modifier, Style};
 
+/// Visual styles for each markdown element. The renderer reads these when converting
+/// pulldown-cmark events to styled spans. Code block syntax highlighting comes from
+/// syntect's "base16-ocean.dark" theme and is not controlled by these fields.
 #[derive(Debug, Clone)]
 pub struct Theme {
     pub h1: Style,
@@ -8,6 +11,7 @@ pub struct Theme {
     pub h4: Style,
     pub h5: Style,
     pub h6: Style,
+    /// Backtick-wrapped inline code, not fenced code blocks.
     pub code_inline: Style,
     pub link: Style,
     pub blockquote: Style,

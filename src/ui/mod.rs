@@ -1,3 +1,6 @@
+//! UI rendering layer. Splits the terminal into a scrollable markdown viewport
+//! and a bottom status bar, with an optional centered help overlay.
+
 mod help;
 mod status_bar;
 mod viewport;
@@ -11,6 +14,7 @@ use ratatui::{
 
 use crate::app::App;
 
+/// Top-level render: viewport (bordered, scrollable) + status bar (1 row) + help overlay (if active).
 pub fn render(frame: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)

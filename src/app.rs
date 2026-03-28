@@ -10,14 +10,19 @@ use crate::markdown::{self, MarkdownDocument, Theme};
 use crate::terminal::TerminalGuard;
 use crate::ui::{self, Viewport};
 
+/// Active interaction mode. Determines how key events are routed.
 #[derive(Default, PartialEq, Eq)]
 pub enum Mode {
     #[default]
     Normal,
+    /// Captures keystrokes into `search_query`; Enter commits, Esc cancels.
     Search,
+    /// Any keypress returns to Normal.
     Help,
 }
 
+/// Top-level application state. Owns the parsed document, viewport, keybindings,
+/// and search state. Constructed via [`AppBuilder`].
 pub struct App {
     pub document: MarkdownDocument,
     pub viewport: Viewport,
@@ -56,6 +61,8 @@ impl App {
         self.mode == Mode::Help
     }
 
+    /// Main event loop: render → poll → dispatch → repeat at ~60fps (16ms poll timeout).
+    /// Recomputes wrapped content height each frame so the scrollbar stays accurate on resize.
     pub fn run(&mut self) -> Result<()> {
         let mut guard = TerminalGuard::new()?;
 
@@ -162,6 +169,7 @@ impl App {
         }
     }
 
+    /// Rebuild `search_matches` with line indices where `search_query` appears (case-insensitive).
     fn update_search(&mut self) {
         self.search_matches.clear();
         self.search_index = 0;
@@ -186,6 +194,8 @@ impl App {
     }
 }
 
+/// Builder for [`App`]. Supply either a file path or raw content string, then
+/// optionally override the theme and keybindings before calling [`build()`](AppBuilder::build).
 #[derive(Default)]
 pub struct AppBuilder {
     file: Option<PathBuf>,

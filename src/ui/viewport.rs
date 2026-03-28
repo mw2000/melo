@@ -6,6 +6,8 @@ use ratatui::{
     Frame,
 };
 
+/// Scrollable content viewport. Tracks scroll position and content height (in wrapped lines).
+/// Renders the markdown as a bordered [`Paragraph`] with word-wrap and a vertical scrollbar.
 pub struct Viewport {
     scroll_offset: u16,
     content_height: usize,
@@ -19,6 +21,8 @@ impl Viewport {
         }
     }
 
+    /// Recompute `content_height` using [`Paragraph::line_count`] to account for word-wrap.
+    /// Must be called each frame (or on resize) before [`clamp_scroll`](Viewport::clamp_scroll).
     pub fn update_wrapped_height(&mut self, text: &Text, inner_width: u16) {
         let paragraph = Paragraph::new(text.clone()).wrap(Wrap { trim: false });
         self.content_height = paragraph.line_count(inner_width);
@@ -60,6 +64,7 @@ impl Viewport {
         self.scroll_offset = line;
     }
 
+    /// Maximum scroll offset: `content_height - viewport_height` (clamped to 0).
     fn max_scroll(&self, viewport_height: u16) -> u16 {
         (self.content_height as u16).saturating_sub(viewport_height)
     }

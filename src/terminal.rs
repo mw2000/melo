@@ -8,6 +8,9 @@ use crossterm::{
 };
 use ratatui::prelude::*;
 
+/// RAII wrapper that enters alternate screen + raw mode on creation and restores
+/// the terminal on drop. Also installs a panic hook so the terminal is cleaned
+/// up even on unwind.
 pub struct TerminalGuard {
     pub terminal: Terminal<CrosstermBackend<Stdout>>,
 }

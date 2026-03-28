@@ -1,3 +1,12 @@
+//! Converts pulldown-cmark events into styled ratatui [`Text`].
+//!
+//! The core type is [`Context`], a stateful walker that processes markdown events
+//! sequentially and accumulates [`Line`]/[`Span`] output. Key rendering paths:
+//! - **Headings**: H1 gets a padded line with background color; H2-H6 are bold + color.
+//! - **Code blocks**: GitHub-style bordered boxes (╭╮╰╯) with syntect syntax highlighting.
+//! - **Tables**: Box-drawing characters (┌┬┐│├┼┤└┴┘) with Unicode-width-aware columns.
+//! - **Inline**: Bold, italic, strikethrough, links (with URL suffix), inline code.
+
 use std::sync::LazyLock;
 
 use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
@@ -14,6 +23,7 @@ use super::theme::Theme;
 static SYNTAX_SET: LazyLock<SyntaxSet> = LazyLock::new(SyntaxSet::load_defaults_newlines);
 static THEME_SET: LazyLock<ThemeSet> = LazyLock::new(ThemeSet::load_defaults);
 
+/// Entry point: parse markdown string and render to owned ratatui [`Text`].
 pub fn render(content: &str, theme: &Theme) -> Text<'static> {
     let mut opts = Options::empty();
     opts.insert(Options::ENABLE_TABLES);
@@ -30,10 +40,16 @@ pub fn render(content: &str, theme: &Theme) -> Text<'static> {
     ctx.finish()
 }
 
+/// Stateful markdown-to-ratatui converter. Walks pulldown-cmark events via [`push_event`](Context::push_event),
+/// building up `lines`/`spans`. Nested formatting is tracked in `style_stack`; block-level
+/// elements (code blocks, tables) buffer content in their own state structs until the
+/// closing tag triggers a flush to `lines`.
 struct Context<'a> {
     theme: &'a Theme,
     lines: Vec<Line<'static>>,
+    /// Spans being accumulated for the current line (flushed on newline/block boundary).
     spans: Vec<Span<'static>>,
+    /// Nested inline styles (bold inside italic, etc). Merged via `Style::patch`.
     style_stack: Vec<Style>,
 
     list_stack: Vec<ListKind>,
@@ -42,6 +58,7 @@ struct Context<'a> {
     code_block: Option<CodeBlockState>,
     table: Option<TableState>,
     pending_link_url: Option<String>,
+    /// Tracks whether the next block element should emit a blank line separator.
     needs_newline: bool,
 }
 
@@ -50,11 +67,15 @@ enum ListKind {
     Ordered(u64),
 }
 
+/// Accumulates fenced code block content until the closing tag, then renders
+/// the entire block at once with syntax highlighting and box borders.
 struct CodeBlockState {
     lang: Option<String>,
     content: String,
 }
 
+/// Accumulates table rows/cells until the closing `</table>` tag, then renders
+/// the full table with box-drawing borders and Unicode-width-aware column sizing.
 struct TableState {
     rows: Vec<TableRow>,
     current_cells: Vec<Vec<Span<'static>>>,
@@ -430,6 +451,9 @@ impl<'a> Context<'a> {
         self.lines.push(Line::styled(padded, style));
     }
 
+    /// Render a completed code block as a bordered box with syntax highlighting.
+    /// Uses syntect's "base16-ocean.dark" theme. Falls back to plain styled text
+    /// if the language isn't recognized or highlighting fails.
     fn render_code_block(&mut self, cb: &CodeBlockState) {
         let syn_theme = &THEME_SET.themes["base16-ocean.dark"];
         let bg_color = syn_theme
@@ -519,6 +543,8 @@ impl<'a> Context<'a> {
         self.lines.push(Line::styled(bottom, border));
     }
 
+    /// Render a completed table with box-drawing borders. Column widths are computed
+    /// using [`Span::width()`] (Unicode display width) to handle multi-byte characters correctly.
     fn render_table(&mut self, table: &TableState) {
         if table.rows.is_empty() {
             return;

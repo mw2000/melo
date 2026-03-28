@@ -1,3 +1,14 @@
+//! mdfi — A TUI markdown viewer built on ratatui + crossterm.
+//!
+//! Architecture:
+//! - [`app`]: Owns the event loop, mode state (Normal/Search/Help), and coordinates
+//!   input handling with viewport scrolling.
+//! - [`markdown`]: Parses raw markdown via pulldown-cmark and renders it to styled
+//!   ratatui [`Text`] using syntect for code highlighting.
+//! - [`ui`]: Renders the viewport (with scrollbar), status bar, and help overlay.
+//! - [`input`]: Maps key events to [`Action`]s via a configurable [`InputMap`].
+//! - [`terminal`]: RAII guard that enters/leaves the alternate screen and raw mode.
+
 use std::io::{self, IsTerminal, Read};
 use std::path::PathBuf;
 
@@ -49,6 +60,8 @@ fn main() -> Result<()> {
     app.run()
 }
 
+/// Redirect stdin back to `/dev/tty` after reading piped input.
+/// Without this, crossterm can't read keyboard events when stdin was a pipe.
 #[cfg(unix)]
 fn reopen_stdin_from_tty() -> io::Result<()> {
     use std::os::unix::io::AsRawFd;

@@ -4,6 +4,8 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::action::Action;
 
+/// Maps `(KeyCode, KeyModifiers)` pairs to [`Action`]s. Use [`InputMap::vim()`] for
+/// the default keybindings or [`InputMap::builder()`] to define custom ones.
 pub struct InputMap {
     bindings: HashMap<(KeyCode, KeyModifiers), Action>,
 }
@@ -19,6 +21,7 @@ impl InputMap {
         }
     }
 
+    /// Default vim-style keybindings (j/k scroll, g/G jump, / search, ? help).
     pub fn vim() -> Self {
         Self::builder()
             .bind(KeyCode::Char('q'), KeyModifiers::NONE, Action::Quit)

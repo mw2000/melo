@@ -19,6 +19,7 @@ const BINDINGS: &[(&str, &str)] = &[
     ("q / Esc", "Quit"),
 ];
 
+/// Render a centered keybinding reference popup over the current content.
 pub fn render(frame: &mut Frame, area: Rect) {
     let popup_width = 38_u16;
     let popup_height = (BINDINGS.len() as u16) + 4;

@@ -1,3 +1,5 @@
+/// Commands that the app can execute, produced by [`crate::input::InputMap`] or mouse events.
+/// The `u16` on scroll variants is the number of lines to move.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Action {
     Quit,

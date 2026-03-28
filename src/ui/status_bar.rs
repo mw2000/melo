@@ -5,6 +5,8 @@ use ratatui::{
     Frame,
 };
 
+/// Render the bottom status bar. Shows either the search input (when `search_query`
+/// is `Some`) or the filename, line range, scroll percentage, and help hint.
 pub fn render(
     frame: &mut Frame,
     area: Rect,

@@ -50,6 +50,16 @@ impl InputMap {
             .bind(KeyCode::Char('n'), KeyModifiers::NONE, Action::SearchNext)
             .bind(KeyCode::Char('N'), KeyModifiers::SHIFT, Action::SearchPrev)
             .bind(KeyCode::Char('N'), KeyModifiers::NONE, Action::SearchPrev)
+            .bind(KeyCode::Tab, KeyModifiers::NONE, Action::NextHeading)
+            .bind(KeyCode::BackTab, KeyModifiers::SHIFT, Action::PrevHeading)
+            .bind(KeyCode::BackTab, KeyModifiers::NONE, Action::PrevHeading)
+            .bind(KeyCode::Char('t'), KeyModifiers::NONE, Action::ToggleToc)
+            .bind(
+                KeyCode::Char('o'),
+                KeyModifiers::NONE,
+                Action::ToggleLinkPicker,
+            )
+            .bind(KeyCode::Backspace, KeyModifiers::NONE, Action::GoBack)
             .build()
     }
 

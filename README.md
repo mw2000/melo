@@ -37,6 +37,28 @@ curl -s https://example.com/doc.md | melo
 
 Pass `--help` or `--version` for the usual.
 
+### Themes
+
+Choose a color theme with `--theme`:
+
+```sh
+melo --theme ocean README.md
+```
+
+Available themes: `dark` (default), `light`, `ocean`.
+
+### Configuration
+
+Create `~/.config/melo/config.toml` to set defaults:
+
+```toml
+theme = "ocean"
+mouse_scroll_lines = 3
+watch = true
+```
+
+CLI flags override config file values.
+
 ## Keybindings
 
 | Key | Action |
@@ -47,12 +69,31 @@ Pass `--help` or `--version` for the usual.
 | `Ctrl-u` / `PageUp` | Half-page up |
 | `g` / `Home` | Jump to top |
 | `G` / `End` | Jump to bottom |
+| `Tab` / `Shift-Tab` | Next / previous heading |
+| `t` | Table of contents |
+| `o` | Open link picker |
+| `Backspace` | Go back (after following a link) |
 | `/` | Search |
 | `n` / `N` | Next / previous match |
 | `?` | Toggle help overlay |
 | `q` / `Esc` | Quit |
 
 Mouse scroll is supported.
+
+## Features
+
+- Syntax-highlighted code blocks with GitHub-style borders
+- Tables with box-drawing characters
+- Heading styles (H1 with background, H2-H6 bold + color)
+- Inline formatting (bold, italic, strikethrough, inline code)
+- Table of contents popup with heading navigation
+- Link picker with browser opening
+- Relative markdown link following with back navigation
+- YAML front matter stripping
+- Inline image rendering (PNG, JPEG, GIF) via halfblock encoding
+- File watching with auto-reload
+- Three built-in color themes
+- Configurable via TOML config file
 
 ## Built With
 

@@ -74,12 +74,6 @@ impl InputMapBuilder {
         self
     }
 
-    #[allow(dead_code)]
-    pub fn unbind(mut self, code: KeyCode, modifiers: KeyModifiers) -> Self {
-        self.bindings.remove(&(code, modifiers));
-        self
-    }
-
     pub fn build(self) -> InputMap {
         InputMap {
             bindings: self.bindings,

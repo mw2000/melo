@@ -78,11 +78,6 @@ impl App {
         self.mode == Mode::LinkPicker
     }
 
-    #[allow(dead_code)]
-    pub fn can_go_back(&self) -> bool {
-        !self.file_stack.is_empty()
-    }
-
     pub fn run(&mut self) -> Result<()> {
         let mut guard = TerminalGuard::new()?;
 
@@ -110,7 +105,6 @@ impl App {
                 match event {
                     AppEvent::Key(key) => self.handle_key(key, viewport_height),
                     AppEvent::Scroll(action) => self.handle_action(action, viewport_height),
-                    AppEvent::Resize(_, _) => {}
                 }
             }
 
@@ -308,9 +302,6 @@ impl App {
                     Mode::LinkPicker
                 };
             }
-            Action::OpenLink => {
-                self.open_selected_link();
-            }
             Action::GoBack => {
                 self.navigate_back();
             }
@@ -416,7 +407,6 @@ pub struct AppBuilder {
     file: Option<PathBuf>,
     content: Option<(String, String)>,
     theme: Option<Theme>,
-    input_map: Option<InputMap>,
 }
 
 impl AppBuilder {
@@ -435,12 +425,6 @@ impl AppBuilder {
         self
     }
 
-    #[allow(dead_code)]
-    pub fn input_map(mut self, map: InputMap) -> Self {
-        self.input_map = Some(map);
-        self
-    }
-
     pub fn build(self) -> Result<App> {
         let (raw_content, filename, file_path) = match (self.file, self.content) {
             (Some(file), _) => {
@@ -453,7 +437,7 @@ impl AppBuilder {
         };
 
         let theme = self.theme.unwrap_or_default();
-        let input_map = self.input_map.unwrap_or_else(InputMap::vim);
+        let input_map = InputMap::vim();
         let base_dir = file_path.as_deref().and_then(|p| p.parent());
         let document = markdown::parse(&raw_content, &theme, base_dir);
         let content_height = document.text.height();

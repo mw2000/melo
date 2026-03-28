@@ -5,14 +5,12 @@ use crossterm::event::{self, Event, KeyEvent, KeyEventKind, MouseEvent, MouseEve
 
 use crate::action::Action;
 
-/// Thin abstraction over crossterm events, filtering to only key presses,
-/// mouse scroll, and terminal resize.
+/// Thin abstraction over crossterm events, filtering to only key presses
+/// and mouse scroll.
 pub enum AppEvent {
     Key(KeyEvent),
     /// Mouse scroll pre-converted to an [`Action`] (ScrollUp/ScrollDown by 3 lines).
     Scroll(Action),
-    #[allow(dead_code)]
-    Resize(u16, u16),
 }
 
 /// Non-blocking event poll. Returns `None` on timeout or ignored events.
@@ -28,7 +26,6 @@ pub fn poll(timeout: Duration) -> Result<Option<AppEvent>> {
                 kind: MouseEventKind::ScrollDown,
                 ..
             }) => Ok(Some(AppEvent::Scroll(Action::ScrollDown(3)))),
-            Event::Resize(w, h) => Ok(Some(AppEvent::Resize(w, h))),
             _ => Ok(None),
         }
     } else {

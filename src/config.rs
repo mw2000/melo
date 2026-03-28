@@ -6,11 +6,8 @@ use serde::Deserialize;
 /// All fields are optional — missing values fall back to defaults.
 /// CLI flags take precedence over config file values.
 #[derive(Debug, Default, Deserialize)]
-#[allow(dead_code)]
 pub struct Config {
     pub theme: Option<String>,
-    pub mouse_scroll_lines: Option<u16>,
-    pub watch: Option<bool>,
 }
 
 impl Config {

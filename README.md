@@ -53,8 +53,6 @@ Create `~/.config/melo/config.toml` to set defaults:
 
 ```toml
 theme = "ocean"
-mouse_scroll_lines = 3
-watch = true
 ```
 
 CLI flags override config file values.

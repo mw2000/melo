@@ -5,8 +5,6 @@ use ratatui::style::{Color, Modifier, Style};
 /// [`Theme::light`], [`Theme::ocean`]) or [`Theme::from_name`] for built-in variants.
 #[derive(Debug, Clone)]
 pub struct Theme {
-    #[allow(dead_code)]
-    pub name: String,
     pub syntect_theme: String,
     pub h1: Style,
     pub h2: Style,
@@ -39,7 +37,6 @@ impl Theme {
 
     pub fn dark() -> Self {
         Self {
-            name: "dark".into(),
             syntect_theme: "base16-ocean.dark".into(),
             h1: Style::default()
                 .fg(Color::White)
@@ -77,7 +74,6 @@ impl Theme {
 
     pub fn light() -> Self {
         Self {
-            name: "light".into(),
             syntect_theme: "InspiredGitHub".into(),
             h1: Style::default()
                 .fg(Color::White)
@@ -115,7 +111,6 @@ impl Theme {
 
     pub fn ocean() -> Self {
         Self {
-            name: "ocean".into(),
             syntect_theme: "base16-ocean.dark".into(),
             h1: Style::default()
                 .fg(Color::White)

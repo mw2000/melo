@@ -33,8 +33,6 @@ pub struct HeadingInfo {
 
 #[derive(Debug, Clone)]
 pub struct LinkInfo {
-    #[allow(dead_code)]
-    pub line: usize,
     pub url: String,
     pub text: String,
 }
@@ -402,7 +400,6 @@ impl<'a> Context<'a> {
                 if let Some(url) = self.pending_link_url.take() {
                     let link_text = std::mem::take(&mut self.pending_link_text);
                     self.links.push(LinkInfo {
-                        line: self.lines.len(),
                         url: url.clone(),
                         text: link_text,
                     });

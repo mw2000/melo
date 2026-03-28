@@ -4,9 +4,11 @@
 //! The [`renderer`] handles headings, code blocks (syntax-highlighted via syntect),
 //! tables (box-drawing chars), lists, blockquotes, links, and inline formatting.
 
+pub mod image;
 mod parser;
 mod renderer;
 mod theme;
 
 pub use parser::{parse, MarkdownDocument};
+pub use renderer::{HeadingInfo, LinkInfo};
 pub use theme::Theme;

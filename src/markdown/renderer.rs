@@ -7,6 +7,7 @@
 //! - **Tables**: Box-drawing characters (┌┬┐│├┼┤└┴┘) with Unicode-width-aware columns.
 //! - **Inline**: Bold, italic, strikethrough, links (with URL suffix), inline code.
 
+use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 
 use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
@@ -23,21 +24,42 @@ use super::theme::Theme;
 static SYNTAX_SET: LazyLock<SyntaxSet> = LazyLock::new(SyntaxSet::load_defaults_newlines);
 static THEME_SET: LazyLock<ThemeSet> = LazyLock::new(ThemeSet::load_defaults);
 
-/// Entry point: parse markdown string and render to owned ratatui [`Text`].
-pub fn render(content: &str, theme: &Theme) -> Text<'static> {
+#[derive(Debug, Clone)]
+pub struct HeadingInfo {
+    pub line: usize,
+    pub level: HeadingLevel,
+    pub text: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct LinkInfo {
+    #[allow(dead_code)]
+    pub line: usize,
+    pub url: String,
+    pub text: String,
+}
+
+pub struct RenderOutput {
+    pub text: Text<'static>,
+    pub headings: Vec<HeadingInfo>,
+    pub links: Vec<LinkInfo>,
+}
+
+pub fn render(content: &str, theme: &Theme, base_dir: Option<&Path>) -> RenderOutput {
     let mut opts = Options::empty();
     opts.insert(Options::ENABLE_TABLES);
     opts.insert(Options::ENABLE_STRIKETHROUGH);
     opts.insert(Options::ENABLE_TASKLISTS);
+    opts.insert(Options::ENABLE_YAML_STYLE_METADATA_BLOCKS);
 
     let parser = Parser::new_ext(content, opts);
-    let mut ctx = Context::new(theme);
+    let mut ctx = Context::new(theme, base_dir);
 
     for event in parser {
         ctx.push_event(event);
     }
 
-    ctx.finish()
+    ctx.into_output()
 }
 
 /// Stateful markdown-to-ratatui converter. Walks pulldown-cmark events via [`push_event`](Context::push_event),
@@ -46,6 +68,7 @@ pub fn render(content: &str, theme: &Theme) -> Text<'static> {
 /// closing tag triggers a flush to `lines`.
 struct Context<'a> {
     theme: &'a Theme,
+    base_dir: Option<PathBuf>,
     lines: Vec<Line<'static>>,
     /// Spans being accumulated for the current line (flushed on newline/block boundary).
     spans: Vec<Span<'static>>,
@@ -58,8 +81,16 @@ struct Context<'a> {
     code_block: Option<CodeBlockState>,
     table: Option<TableState>,
     pending_link_url: Option<String>,
+    pending_link_text: String,
+    /// True when the current image was rendered inline as halfblocks (skip alt text / URL suffix).
+    image_rendered: bool,
+    /// True while inside a YAML front matter block — all content is discarded.
+    in_metadata: bool,
     /// Tracks whether the next block element should emit a blank line separator.
     needs_newline: bool,
+
+    headings: Vec<HeadingInfo>,
+    links: Vec<LinkInfo>,
 }
 
 enum ListKind {
@@ -89,9 +120,10 @@ struct TableRow {
 }
 
 impl<'a> Context<'a> {
-    fn new(theme: &'a Theme) -> Self {
+    fn new(theme: &'a Theme, base_dir: Option<&Path>) -> Self {
         Self {
             theme,
+            base_dir: base_dir.map(Path::to_path_buf),
             lines: Vec::new(),
             spans: Vec::new(),
             style_stack: Vec::new(),
@@ -101,7 +133,12 @@ impl<'a> Context<'a> {
             code_block: None,
             table: None,
             pending_link_url: None,
+            pending_link_text: String::new(),
+            image_rendered: false,
+            in_metadata: false,
             needs_newline: false,
+            headings: Vec::new(),
+            links: Vec::new(),
         }
     }
 
@@ -125,7 +162,16 @@ impl<'a> Context<'a> {
     }
 
     fn push_event(&mut self, event: Event) {
+        if self.in_metadata {
+            if matches!(event, Event::End(TagEnd::MetadataBlock(_))) {
+                self.in_metadata = false;
+            }
+            return;
+        }
         match event {
+            Event::Start(Tag::MetadataBlock(_)) => {
+                self.in_metadata = true;
+            }
             Event::Start(tag) => self.start_tag(tag),
             Event::End(tag) => self.end_tag(tag),
             Event::Text(text) => self.text(&text),
@@ -249,8 +295,27 @@ impl<'a> Context<'a> {
                 self.pending_link_url = Some(dest_url.to_string());
             }
             Tag::Image { dest_url, .. } => {
-                self.spans
-                    .push(Span::styled("🖼 ", Style::default().fg(Color::DarkGray)));
+                self.image_rendered = false;
+
+                let resolved = self
+                    .base_dir
+                    .as_ref()
+                    .map(|dir| dir.join(dest_url.as_ref()))
+                    .filter(|p| p.is_file());
+
+                if let Some(ref path) = resolved
+                    && let Some(image_lines) = super::image::render_image(path)
+                {
+                    self.flush_line();
+                    self.lines.extend(image_lines);
+                    self.image_rendered = true;
+                }
+
+                if !self.image_rendered {
+                    self.spans
+                        .push(Span::styled("🖼 ", Style::default().fg(Color::DarkGray)));
+                }
+
                 self.style_stack.push(self.theme.link);
                 self.pending_link_url = Some(dest_url.to_string());
             }
@@ -335,6 +400,12 @@ impl<'a> Context<'a> {
             TagEnd::Link => {
                 self.style_stack.pop();
                 if let Some(url) = self.pending_link_url.take() {
+                    let link_text = std::mem::take(&mut self.pending_link_text);
+                    self.links.push(LinkInfo {
+                        line: self.lines.len(),
+                        url: url.clone(),
+                        text: link_text,
+                    });
                     self.spans.push(Span::styled(
                         format!(" ({})", url),
                         Style::default().fg(Color::DarkGray),
@@ -343,7 +414,10 @@ impl<'a> Context<'a> {
             }
             TagEnd::Image => {
                 self.style_stack.pop();
-                if let Some(url) = self.pending_link_url.take() {
+                if self.image_rendered {
+                    self.pending_link_url.take();
+                    self.image_rendered = false;
+                } else if let Some(url) = self.pending_link_url.take() {
                     self.spans.push(Span::styled(
                         format!(" ({})", url),
                         Style::default().fg(Color::DarkGray),
@@ -358,6 +432,14 @@ impl<'a> Context<'a> {
         if let Some(ref mut cb) = self.code_block {
             cb.content.push_str(text);
             return;
+        }
+
+        if self.image_rendered {
+            return;
+        }
+
+        if self.pending_link_url.is_some() {
+            self.pending_link_text.push_str(text);
         }
 
         {
@@ -443,6 +525,12 @@ impl<'a> Context<'a> {
             HeadingLevel::H6 => self.theme.h6,
         };
 
+        self.headings.push(HeadingInfo {
+            line: self.lines.len(),
+            level,
+            text: text.to_string(),
+        });
+
         let padded = if level == HeadingLevel::H1 {
             format!("  {}  ", text)
         } else {
@@ -452,10 +540,9 @@ impl<'a> Context<'a> {
     }
 
     /// Render a completed code block as a bordered box with syntax highlighting.
-    /// Uses syntect's "base16-ocean.dark" theme. Falls back to plain styled text
-    /// if the language isn't recognized or highlighting fails.
+    /// Falls back to plain styled text if the language isn't recognized.
     fn render_code_block(&mut self, cb: &CodeBlockState) {
-        let syn_theme = &THEME_SET.themes["base16-ocean.dark"];
+        let syn_theme = &THEME_SET.themes[&self.theme.syntect_theme];
         let bg_color = syn_theme
             .settings
             .background
@@ -634,8 +721,12 @@ impl<'a> Context<'a> {
         s
     }
 
-    fn finish(mut self) -> Text<'static> {
+    fn into_output(mut self) -> RenderOutput {
         self.flush_line();
-        Text::from(self.lines)
+        RenderOutput {
+            text: Text::from(self.lines),
+            headings: self.headings,
+            links: self.links,
+        }
     }
 }

@@ -17,25 +17,43 @@ use color_eyre::{eyre::eyre, Result};
 
 mod action;
 mod app;
+mod config;
 mod event;
 mod input;
 mod markdown;
 mod terminal;
 mod ui;
+pub mod watcher;
 
 #[derive(Parser)]
 #[command(name = "melo", about = "A mellow TUI markdown viewer", version)]
 struct Cli {
     /// Markdown file to view (reads from stdin if omitted)
     file: Option<PathBuf>,
+
+    /// Color theme (dark, light, ocean)
+    #[arg(long)]
+    theme: Option<String>,
 }
 
 fn main() -> Result<()> {
     color_eyre::install()?;
 
     let cli = Cli::parse();
+    let cfg = config::Config::load();
 
-    let mut builder = app::App::builder();
+    let theme_name = cli.theme.as_deref()
+        .or(cfg.theme.as_deref())
+        .unwrap_or("dark");
+    let theme = markdown::Theme::from_name(theme_name).ok_or_else(|| {
+        eyre!(
+            "unknown theme '{}' (available: {})",
+            theme_name,
+            markdown::Theme::available_themes().join(", ")
+        )
+    })?;
+
+    let mut builder = app::App::builder().theme(theme);
 
     match cli.file {
         Some(path) => {

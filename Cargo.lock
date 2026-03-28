@@ -833,7 +833,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mdfi"
+name = "melo"
 version = "0.1.0"
 dependencies = [
  "clap",

@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 
-REPO="mw2000/mdfi"
-INSTALL_DIR="${MDFI_INSTALL_DIR:-$HOME/.local/bin}"
+REPO="mw2000/melo"
+INSTALL_DIR="${MELO_INSTALL_DIR:-$HOME/.local/bin}"
 
 main() {
     platform="$(detect_platform)"
@@ -15,28 +15,28 @@ main() {
         err "could not determine latest release"
     fi
 
-    url="https://github.com/${REPO}/releases/download/${tag}/mdfi-${platform}.tar.gz"
+    url="https://github.com/${REPO}/releases/download/${tag}/melo-${platform}.tar.gz"
 
-    info "downloading mdfi ${tag} for ${platform}"
+    info "downloading melo ${tag} for ${platform}"
 
     tmpdir="$(mktemp -d)"
     trap 'rm -rf "$tmpdir"' EXIT
 
     if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$url" -o "$tmpdir/mdfi.tar.gz"
+        curl -fsSL "$url" -o "$tmpdir/melo.tar.gz"
     elif command -v wget >/dev/null 2>&1; then
-        wget -qO "$tmpdir/mdfi.tar.gz" "$url"
+        wget -qO "$tmpdir/melo.tar.gz" "$url"
     else
         err "curl or wget required"
     fi
 
-    tar xzf "$tmpdir/mdfi.tar.gz" -C "$tmpdir"
+    tar xzf "$tmpdir/melo.tar.gz" -C "$tmpdir"
 
     mkdir -p "$INSTALL_DIR"
-    mv "$tmpdir/mdfi" "$INSTALL_DIR/mdfi"
-    chmod +x "$INSTALL_DIR/mdfi"
+    mv "$tmpdir/melo" "$INSTALL_DIR/melo"
+    chmod +x "$INSTALL_DIR/melo"
 
-    info "installed to ${INSTALL_DIR}/mdfi"
+    info "installed to ${INSTALL_DIR}/melo"
 
     if ! echo "$PATH" | tr ':' '\n' | grep -qx "$INSTALL_DIR"; then
         warn "${INSTALL_DIR} is not in your PATH"
@@ -45,7 +45,7 @@ main() {
         warn "  export PATH=\"${INSTALL_DIR}:\$PATH\""
     fi
 
-    info "done — run 'mdfi --help' to get started"
+    info "done — run 'melo --help' to get started"
 }
 
 detect_platform() {

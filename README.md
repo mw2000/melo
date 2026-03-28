@@ -1,11 +1,11 @@
-# mdfi
+# 🌿 melo
 
-A terminal markdown viewer. Read `.md` files comfortably in your terminal.
+A mellow terminal markdown viewer. Read `.md` files comfortably in your terminal.
 
 ## Installation
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/mw2000/mdfi/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/mw2000/melo/main/install.sh | sh
 ```
 
 This downloads the latest release binary to `~/.local/bin`. Make sure it's on your PATH:
@@ -25,14 +25,14 @@ Or with cargo directly: `cargo install --path .` (requires Rust 1.85+).
 ## Usage
 
 ```sh
-mdfi <file>
+melo <file>
 ```
 
 Pipe from stdin:
 
 ```sh
-cat README.md | mdfi
-curl -s https://example.com/doc.md | mdfi
+cat README.md | melo
+curl -s https://example.com/doc.md | melo
 ```
 
 Pass `--help` or `--version` for the usual.

@@ -5,7 +5,7 @@ build:
 
 install prefix=default_prefix: build
     mkdir -p {{prefix}}/bin
-    cp target/release/mdfi {{prefix}}/bin/mdfi
+    cp target/release/melo {{prefix}}/bin/melo
 
 uninstall prefix=default_prefix:
-    rm -f {{prefix}}/bin/mdfi
+    rm -f {{prefix}}/bin/melo

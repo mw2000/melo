@@ -1,4 +1,4 @@
-//! mdfi — A TUI markdown viewer built on ratatui + crossterm.
+//! melo — A mellow TUI markdown viewer built on ratatui + crossterm.
 //!
 //! Architecture:
 //! - [`app`]: Owns the event loop, mode state (Normal/Search/Help), and coordinates
@@ -24,7 +24,7 @@ mod terminal;
 mod ui;
 
 #[derive(Parser)]
-#[command(name = "mdfi", about = "A TUI markdown viewer", version)]
+#[command(name = "melo", about = "A mellow TUI markdown viewer", version)]
 struct Cli {
     /// Markdown file to view (reads from stdin if omitted)
     file: Option<PathBuf>,
@@ -43,7 +43,7 @@ fn main() -> Result<()> {
         }
         None => {
             if io::stdin().is_terminal() {
-                return Err(eyre!("no file specified and nothing on stdin\n\nUsage: mdfi <file>\n       cat file.md | mdfi"));
+                return Err(eyre!("no file specified and nothing on stdin\n\nUsage: melo <file>\n       cat file.md | melo"));
             }
 
             let mut content = String::new();

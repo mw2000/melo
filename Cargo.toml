@@ -1,8 +1,8 @@
 [package]
-name = "mdfi"
+name = "melo"
 version = "0.1.0"
 edition = "2024"
-description = "A TUI markdown viewer"
+description = "A mellow TUI markdown viewer"
 
 [dependencies]
 ratatui = { version = "0.30", features = ["unstable-rendered-line-info"] }

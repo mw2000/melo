@@ -60,7 +60,7 @@ impl App {
         let mut guard = TerminalGuard::new()?;
 
         loop {
-            let viewport_height = guard.terminal.size()?.height.saturating_sub(2);
+            let viewport_height = guard.terminal.size()?.height.saturating_sub(3);
             self.viewport.clamp_scroll(viewport_height);
 
             guard.terminal.draw(|frame| {

@@ -5,7 +5,7 @@ edition = "2024"
 description = "A TUI markdown viewer"
 
 [dependencies]
-ratatui = "0.30"
+ratatui = { version = "0.30", features = ["unstable-rendered-line-info"] }
 crossterm = "0.29"
 pulldown-cmark = "0.13"
 syntect = "5"

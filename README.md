@@ -58,7 +58,8 @@ Mouse scroll is supported.
 
 - [ratatui](https://github.com/ratatui-org/ratatui) 0.30
 - [crossterm](https://github.com/crossterm-rs/crossterm) 0.29
-- [tui-markdown](https://github.com/joshka/tui-markdown) 0.3
+- [pulldown-cmark](https://github.com/pulldown-cmark/pulldown-cmark) 0.13
+- [syntect](https://github.com/trishume/syntect) 5
 
 ## License
 

@@ -19,6 +19,11 @@ impl Viewport {
         }
     }
 
+    pub fn update_wrapped_height(&mut self, text: &Text, inner_width: u16) {
+        let paragraph = Paragraph::new(text.clone()).wrap(Wrap { trim: false });
+        self.content_height = paragraph.line_count(inner_width);
+    }
+
     pub fn scroll_up(&mut self, amount: u16) {
         self.scroll_offset = self.scroll_offset.saturating_sub(amount);
     }
@@ -77,9 +82,10 @@ impl Viewport {
         frame.render_widget(paragraph, area);
 
         let inner_height = area.height.saturating_sub(2) as usize;
-        if self.content_height > inner_height {
+        let max_scroll = self.content_height.saturating_sub(inner_height);
+        if max_scroll > 0 {
             let mut scrollbar_state =
-                ScrollbarState::new(self.content_height).position(self.scroll_offset as usize);
+                ScrollbarState::new(max_scroll + 1).position(self.scroll_offset as usize);
             let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight);
             frame.render_stateful_widget(scrollbar, area, &mut scrollbar_state);
         }

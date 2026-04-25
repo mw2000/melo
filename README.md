@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="melo logo" />
+</p>
+
 # 🌿 melo
 
 A mellow terminal markdown viewer. Read `.md` files comfortably in your terminal.
